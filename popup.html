@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英文阅读助手</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: #333;
+    }
+
+    /* 导航栏 */
+    .nav {
+      display: flex;
+      border-bottom: 1px solid #eee;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #999;
+      transition: color 0.2s;
+    }
+    .nav-btn.active {
+      color: #2196F3;
+      font-weight: 500;
+    }
+    .nav-btn.active::after {
+      content: '';
+      display: block;
+      height: 2px;
+      background: #2196F3;
+      border-radius: 1px;
+      margin-top: 8px;
+    }
+
+    /* 页面容器 */
+    .page {
+      display: none;
+      padding: 16px;
+    }
+    .page.active { display: block; }
+
+    /* 首页 */
+    h1 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .feature-list {
+      list-style: none;
+      margin-bottom: 12px;
+    }
+    .feature-list li {
+      font-size: 13px;
+      color: #555;
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .feature-list li::before {
+      content: '\2713';
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    .quick-start {
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .quick-start-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .quick-start-text {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* 设置页 */
+    .setting-group {
+      margin-bottom: 16px;
+    }
+    .setting-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .setting-hint {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+    .setting-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #333;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .setting-input:focus {
+      border-color: #2196F3;
+    }
+    .setting-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #333;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+    .setting-select:focus {
+      border-color: #2196F3;
+    }
+
+    /* 术语库 */
+    .term-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .term-list {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 6px;
+    }
+    .term-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .term-item:last-child {
+      border-bottom: none;
+    }
+    .term-key {
+      font-weight: 500;
+      color: #333;
+    }
+    .term-val {
+      color: #666;
+      margin-left: 4px;
+    }
+    .term-del {
+      background: none;
+      border: none;
+      color: #e53935;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .term-del:hover {
+      background: #ffebee;
+    }
+    .term-add-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .term-add-row input {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+    }
+    .term-add-row input:focus {
+      border-color: #2196F3;
+    }
+    .term-add-row button {
+      padding: 6px 12px;
+      background: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .term-add-row button:hover {
+      background: #1976D2;
+    }
+    .term-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .term-actions button {
+      padding: 4px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+      font-size: 11px;
+      color: #555;
+      cursor: pointer;
+    }
+    .term-actions button:hover {
+      background: #f5f5f5;
+    }
+
+    /* 保存按钮 */
+    .save-btn {
+      width: 100%;
+      padding: 10px;
+      background: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .save-btn:hover {
+      background: #1976D2;
+    }
+    .save-btn:disabled {
+      background: #90CAF9;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    .divider {
+      height: 1px;
+      background: #eee;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航 -->
+  <div class="nav">
+    <button class="nav-btn active" data-page="home">使用说明</button>
+    <button class="nav-btn" data-page="settings">设置</button>
+  </div>
+
+  <!-- 首页 -->
+  <div class="page active" id="page-home">
+    <h1>英文阅读助手</h1>
+
+    <ul class="feature-list">
+      <li>选中文本 → 翻译/解读/摘要</li>
+      <li>长难句语法结构分析</li>
+      <li>代码内容智能识别处理</li>
+      <li>页面整体摘要生成</li>
+      <li>可自定义术语翻译映射</li>
+    </ul>
+
+    <div class="quick-start">
+      <div class="quick-start-title">快速上手</div>
+      <div class="quick-start-text">
+        1. 打开任意英文网页<br>
+        2. 选中要处理的文本<br>
+        3. 点击右下角的 <b>🌐</b> 按钮打开面板<br>
+        4. 切换「翻译/解读/摘要」查看结果<br>
+        <br>
+        <b>提示：</b>右键点击段落也可快速翻译
+      </div>
+    </div>
+
+    <p style="text-align:center;font-size:11px;color:#999;">版本 2.0 | DeepSeek + MyMemory</p>
+  </div>
+
+  <!-- 设置页 -->
+  <div class="page" id="page-settings">
+    <div class="setting-group">
+      <label class="setting-label">AI 提供商</label>
+      <select class="setting-select" id="provider">
+        <option value="deepseek">DeepSeek</option>
+        <option value="minimax">MiniMax</option>
+        <option value="ollama">Ollama (本地)</option>
+        <option value="custom">自定义</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">API 地址</label>
+      <input class="setting-input" id="apiUrl" type="text" placeholder="https://api.deepseek.com/v1">
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">API Key</label>
+      <input class="setting-input" id="apiKey" type="password" placeholder="sk-...">
+      <div class="setting-hint">本地 Ollama 可留空</div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">模型名称</label>
+      <input class="setting-input" id="model" type="text" placeholder="deepseek-chat">
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">默认打开 Tab</label>
+      <select class="setting-select" id="defaultTab">
+        <option value="translate">翻译</option>
+        <option value="interpret">解读</option>
+        <option value="summarize">摘要</option>
+      </select>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 术语库 -->
+    <div class="setting-group">
+      <div class="term-header">
+        <label class="setting-label">术语库</label>
+      </div>
+      <div class="term-list" id="termList"></div>
+
+      <div class="term-add-row">
+        <input id="termKey" type="text" placeholder="英文 (如 callback)">
+        <input id="termVal" type="text" placeholder="中文 (如 回调)">
+        <button id="termAddBtn">添加</button>
+      </div>
+
+      <div class="term-actions">
+        <button id="termImportBtn">导入</button>
+        <button id="termExportBtn">导出</button>
+        <button id="termResetBtn">恢复默认</button>
+      </div>
+      <input type="file" id="termFileInput" accept=".json" style="display:none">
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="save-btn" id="saveBtn">保存设置</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

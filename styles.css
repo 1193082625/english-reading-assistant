@@ -1,0 +1,442 @@
+/* ==========================================
+   英文阅读助手 - 浮动按钮 & 功能面板样式
+   ========================================== */
+
+/* 浮动按钮 */
+.era-float-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2196F3;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+  cursor: pointer;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+.era-float-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
+}
+.era-float-btn:active {
+  transform: scale(0.95);
+}
+.era-float-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* 功能面板 */
+.era-panel {
+  position: fixed;
+  bottom: 84px;
+  right: 24px;
+  width: 400px;
+  max-height: 60vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  z-index: 2147483647;
+  display: none;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  animation: era-slideUp 0.25s ease;
+  overflow: hidden;
+}
+.era-panel.open {
+  display: flex;
+}
+
+@keyframes era-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 面板标题栏 */
+.era-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.era-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+.era-panel-settings {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #999;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+.era-panel-settings:hover {
+  color: #333;
+  background: #f5f5f5;
+}
+.era-panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #999;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+.era-panel-close:hover {
+  color: #333;
+  background: #f5f5f5;
+}
+
+/* 原文展示区 */
+.era-selected-text {
+  padding: 16px;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+  border-bottom: 1px solid #f0f0f0;
+  max-height: 110px;
+  overflow-y: auto;
+  word-break: break-all;
+  display: none;
+  flex-shrink: 0;
+  background: #fafafa;
+}
+.era-selected-text::-webkit-scrollbar {
+  width: 3px;
+}
+.era-selected-text::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 2px;
+}
+
+/* 面板 Tab 栏 */
+.era-panel-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.era-tab-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #999;
+  position: relative;
+  transition: color 0.2s;
+}
+.era-tab-btn:hover {
+  color: #666;
+}
+.era-tab-btn.active {
+  color: #2196F3;
+  font-weight: 500;
+}
+.era-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: #2196F3;
+  border-radius: 1px;
+}
+
+/* 面板内容区 */
+.era-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  min-height: 60px;
+  max-height: 40vh;
+}
+.era-panel-content::-webkit-scrollbar {
+  width: 4px;
+}
+.era-panel-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+/* 面板状态栏 */
+.era-panel-footer {
+  padding: 8px 16px;
+  border-top: 1px solid #eee;
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 解读子模式切换 */
+.era-sub-tabs {
+  display: flex;
+  gap: 4px;
+  padding-left: 18px;
+  padding-top: 18px;
+  padding-bottom: 10px;
+}
+.era-sub-btn {
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+.era-sub-btn:hover {
+  border-color: #2196F3;
+  color: #2196F3;
+}
+.era-sub-btn.active {
+  background: #e3f2fd;
+  border-color: #2196F3;
+  color: #2196F3;
+}
+
+/* 结果文本 */
+.era-result-text {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.7;
+  word-break: break-word;
+}
+.era-result-text p {
+  margin: 4px 0;
+}
+.era-result-text h1,
+.era-result-text h2,
+.era-result-text h3,
+.era-result-text h4 {
+  margin: 12px 0 6px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.era-result-text h1 { font-size: 18px; }
+.era-result-text h2 { font-size: 16px; }
+.era-result-text h3 { font-size: 15px; }
+.era-result-text h4 { font-size: 14px; }
+.era-result-text strong {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.era-result-text em {
+  font-style: italic;
+}
+.era-result-text code {
+  background: #f5f5f5;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #e65100;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+}
+.era-result-text pre {
+  background: #f5f5f5;
+  padding: 10px 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+  border: 1px solid #e8e8e8;
+}
+.era-result-text pre code {
+  background: none;
+  padding: 0;
+  color: #333;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+}
+.era-result-text li,
+.era-result-text ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+.era-result-text li {
+  margin: 8px 0;
+}
+.era-result-text a {
+  color: #2196F3;
+  text-decoration: none;
+}
+.era-result-text a:hover {
+  text-decoration: underline;
+}
+.era-result-text hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 12px 0;
+}
+.era-result-text del {
+  color: #999;
+}
+.era-result-text img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+/* 语法树结构 */
+.era-grammar-block {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-left: 2px solid #2196F3;
+  border-radius: 4px;
+}
+.era-grammar-label {
+  font-size: 11px;
+  color: #2196F3;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.era-grammar-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* 加载状态 */
+.era-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e65100;
+  font-size: 13px;
+  padding: 8px 0;
+}
+.era-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff3e0;
+  border-top: 2px solid #ff9800;
+  border-radius: 50%;
+  animation: era-spin 0.8s linear infinite;
+}
+@keyframes era-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 错误提示 */
+.era-error {
+  padding: 8px 12px;
+  background: #ffebee;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #c62828;
+}
+.era-error-action {
+  color: #2196F3;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+/* 占位提示 */
+.era-placeholder {
+  text-align: center;
+  color: #bbb;
+  font-size: 13px;
+  padding: 24px 0;
+  line-height: 1.6;
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  .era-panel {
+    background: #1e1e1e;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  .era-panel-header {
+    border-bottom-color: #333;
+  }
+  .era-panel-title {
+    color: #e0e0e0;
+  }
+  .era-panel-tabs {
+    border-bottom-color: #333;
+  }
+  .era-panel-footer {
+    border-top-color: #333;
+    color: #777;
+  }
+  .era-result-text {
+    color: #e0e0e0;
+  }
+  .era-result-text h1,
+  .era-result-text h2,
+  .era-result-text h3,
+  .era-result-text h4 {
+    color: #f0f0f0;
+  }
+  .era-result-text strong {
+    color: #f0f0f0;
+  }
+  .era-result-text code {
+    background: #333;
+    color: #ffab40;
+  }
+  .era-result-text pre {
+    background: #2a2a2a;
+    border-color: #404040;
+  }
+  .era-result-text pre code {
+    color: #e0e0e0;
+  }
+  .era-result-text a {
+    color: #64b5f6;
+  }
+  .era-result-text hr {
+    border-top-color: #404040;
+  }
+  .era-result-text del {
+    color: #666;
+  }
+  .era-grammar-block {
+    background: #2a2a2a;
+  }
+  .era-grammar-text {
+    color: #bbb;
+  }
+  .era-placeholder {
+    color: #666;
+  }
+  .era-selected-text {
+    color: #999;
+    border-bottom-color: #2a2a2a;
+    background: #1a1a1a;
+  }
+  .era-selected-text::-webkit-scrollbar-thumb {
+    background: #444;
+  }
+}
