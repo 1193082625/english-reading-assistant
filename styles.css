@@ -347,6 +347,28 @@
   to { transform: rotate(360deg); }
 }
 
+/* 整页分析按钮 */
+.era-summary-actions {
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px 12px;
+  border-top: 1px solid #f0f0f0;
+}
+.era-page-summary-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #2196F3;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.era-page-summary-btn:hover {
+  background: #1976D2;
+}
+
 /* 错误提示 */
 .era-error {
   padding: 8px 12px;

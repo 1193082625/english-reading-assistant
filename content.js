@@ -2,6 +2,7 @@
 (function () {
   'use strict';
 
+  // 防止 content.js 被重复注入执行
   if (window.__eraReaderInjected) return;
   window.__eraReaderInjected = true;
 
@@ -12,6 +13,10 @@
   let currentTab = 'translate';
   let currentSubTab = 'grammar'; // 'grammar' | 'tech'
   let isPanelOpen = false;
+  /**
+   * isContextValid 用于处理 Chrome扩展的一个特有坑 -- Extension context invalidated（扩展上下文失效）。
+   * 该变量在整个脚本中散步在各处做防御检查
+   */
   let isContextValid = true; // 扩展上下文状态标记
 
   // 翻译缓存
@@ -215,7 +220,7 @@
     return [
       {
         role: 'system',
-        content: `你是一个技术导师。讲解以下英文内容的核心含义，用中文输出。\n- 这段话在说什么\n- 关键概念解释\n- 补充必要的背景知识\n- 如果是代码：解释逻辑而非翻译代码本身\n\n这不是翻译任务，而是内容讲解任务。直接输出讲解内容，不要添加开场白。${termPrompt}`,
+        content: `你是一个技术导师。讲解以下内容的核心含义，用中文输出。\n- 这段话在说什么\n- 关键概念解释\n- 补充必要的背景知识\n- 如果是代码：解释逻辑而非翻译代码本身\n\n这不是翻译任务，而是内容讲解任务。直接输出讲解内容，不要添加开场白。${termPrompt}`,
       },
       { role: 'user', content: text },
     ];
@@ -226,7 +231,7 @@
     return [
       {
         role: 'system',
-        content: `为以下英文内容生成结构化摘要。用中文输出。\n- 核心观点（3-5点）\n- 每点不超过30字\n- 技术文档：提炼API列表/功能/步骤\n- 学术论文：研究问题/方法/结论\n- 新闻/博客：核心观点/关键数据\n- 直接输出摘要内容，不要添加开场白或总结语`,
+        content: `为以下内容生成结构化摘要。用中文输出。\n- 核心观点（3-5点）\n- 每点不超过30字\n- 技术文档：提炼API列表/功能/步骤\n- 学术论文：研究问题/方法/结论\n- 新闻/博客：核心观点/关键数据\n- 直接输出摘要内容，不要添加开场白或总结语`,
       },
       { role: 'user', content: text },
     ];
@@ -381,6 +386,61 @@
     }
   }
 
+  // 提取页面正文内容
+  function extractPageContent() {
+    // 优先使用语义化标签
+    const article = document.querySelector('article');
+    const main = document.querySelector('main');
+    const contentEl = article || main || document.body;
+
+    // 克隆节点避免修改原始 DOM
+    const clone = contentEl.cloneNode(true);
+    // 移除无关元素
+    const removeSelectors = ['script', 'style', 'nav', 'footer', 'aside', 'header',
+      '.sidebar', '.nav', '.menu', '.ad', '.advertisement'];
+    removeSelectors.forEach((sel) => {
+      clone.querySelectorAll(sel).forEach((el) => el.remove());
+    });
+
+    let text = clone.textContent || '';
+    text = text.replace(/\s+/g, ' ').trim();
+    // 限制长度，避免 Token 超限
+    if (text.length > 5000) {
+      text = text.substring(0, 5000) + '...';
+    }
+    return text;
+  }
+
+  // 整页摘要
+  async function doFullPageSummarize() {
+    if (!isContextValid || !checkExtensionContext()) {
+      isContextValid = false;
+      showExtensionReloadError();
+      return;
+    }
+
+    showLoading();
+    if (!settings) await loadSettings();
+
+    const pageContent = extractPageContent();
+    if (!pageContent || pageContent.length < 10) {
+      showError('未能提取到页面内容');
+      return;
+    }
+
+    const messages = buildSummaryPrompt(pageContent);
+    const result = await callAIChat(messages);
+    if (result.success) {
+      showResult(result.content);
+    } else if (result.error === 'EXTENSION_CONTEXT_INVALIDATED') {
+      showExtensionReloadError();
+    } else if (result.error === 'API_KEY_MISSING') {
+      showError('请在设置中配置 API Key');
+    } else {
+      showError('分析失败: ' + (result.error || '请重试'));
+    }
+  }
+
   // ============== UI 构建 ==============
 
   function createFloatButton() {
@@ -490,8 +550,19 @@
     // --- 内容区 ---
     contentArea = document.createElement('div');
     contentArea.className = 'era-panel-content';
-    showPlaceholder('选中页面中的英文文本，点击按钮查看翻译、解读或摘要');
+    showPlaceholder('选中页面中的文本，点击按钮查看翻译、解读或摘要');
     panel.appendChild(contentArea);
+
+    // --- 摘要 Tab 操作栏（分析整页等） ---
+    const summaryActions = document.createElement('div');
+    summaryActions.className = 'era-summary-actions';
+    summaryActions.style.display = 'none';
+    const pageSummaryBtn = document.createElement('button');
+    pageSummaryBtn.className = 'era-page-summary-btn';
+    pageSummaryBtn.textContent = '分析整页内容';
+    pageSummaryBtn.addEventListener('click', () => doFullPageSummarize());
+    summaryActions.appendChild(pageSummaryBtn);
+    panel.appendChild(summaryActions);
 
     // --- 状态栏 ---
     const footer = document.createElement('div');
@@ -552,14 +623,30 @@
 
     // 子 Tab 栏仅解读 Tab 显示
     const subTabs = panel.querySelector('.era-sub-tabs');
-    subTabs.style.display = tab === 'interpret' ? 'flex' : 'none';
+    if (tab === 'interpret') {
+      subTabs.style.display = 'flex';
+      const isChinese = selectedText && detectLanguage(selectedText) === 'zh';
+      subBtns['grammar'].style.display = isChinese ? 'none' : '';
+      subBtns['tech'].style.display = '';
+      if (isChinese && currentSubTab === 'grammar') {
+        setActiveSubTab('tech');
+      }
+    } else {
+      subTabs.style.display = 'none';
+    }
+
+    // 摘要 Tab 操作栏
+    const summaryActions = panel.querySelector('.era-summary-actions');
+    if (summaryActions) {
+      summaryActions.style.display = tab === 'summarize' ? 'flex' : 'none';
+    }
 
     // 无选中文本时显示占位
     if (!selectedText) {
       const msgs = {
         translate: '选中页面中的文本进行翻译',
         interpret: '选中英文文本进行语法分析或技术讲解',
-        summarize: '选中要生成摘要的文本',
+        summarize: '选中文本生成摘要，或点击下方按钮分析整页内容',
       };
       showPlaceholder(msgs[tab] || '');
       return;
@@ -636,6 +723,7 @@
     contentArea.innerHTML = `<div class="era-placeholder">${msg}</div>`;
   }
 
+  // 更新面板底部信息 和 选中内容的展示
   function updateFooterStatus() {
     if (selectedText) {
       footerStatus.textContent = `选中文本: ${selectedText.length} 字`;
@@ -749,13 +837,22 @@
       }
 
       // 忽略在面板或浮动按钮内的选中（用户复制内容时不应触发重新解析）
+      /**
+       * selection.rangeCount 是 window.getSelection() 返回的 Selection 对象的属性，表示当前选区的范围（range） 数量
+       * > 0 表示用户确实选中了一段文本，存在有效的 Range 对象
+       */
       if (selection.rangeCount > 0) {
+        // 找出用户选中文本所在的DOM节点位置
+        // .commonAncestorContainer 获取包含选区所有内容的最近公共祖先节点
         const node = selection.getRangeAt(0).commonAncestorContainer;
-        if (panel && panel.contains(node) || floatBtn && floatBtn.contains(node)) {
+        // 判断节点是否在插件UI内
+        // 用于避免插件自身的UI操作干扰用户的选中状态
+        if ((panel && panel.contains(node)) || (floatBtn && floatBtn.contains(node))) {
           return;
         }
       }
 
+      // 限制最多展示 2000 字
       selectedText = text.length > 2000 ? text.substring(0, 2000) : text;
 
       // 获取选中的块级元素
@@ -771,6 +868,8 @@
         // 检测代码内容，自动切换到解读
         if (detectCodeContent(selectedText) && currentTab === 'translate') {
           switchTab('interpret');
+        } else if (detectLanguage(selectedText) === 'zh' && currentTab !== 'translate') {
+          switchTab('translate');
         } else {
           switchTab(currentTab);
         }
@@ -825,9 +924,12 @@
   // ============== 初始化 ==============
 
   async function init() {
+    // 获取配置数据
     await loadSettings();
 
+    // 创建页面右下角浮动按钮
     createFloatButton();
+    // 创建弹窗面板
     createPanel();
 
     // 监听文本选中
@@ -857,9 +959,12 @@
       console.error('英文阅读助手初始化失败:', err);
     });
   }
+  // 确保插件的浮动按钮和功能面板在页面DOM就绪后才注入，避免操作不存在的DOM节点
   if (document.readyState === 'loading') {
+    // DOM 还没准备好，监听 DOMContentLoaded事件，等 DOM 就绪后再初始化
     document.addEventListener('DOMContentLoaded', safeInit);
   } else {
+    // DOM 已经就绪了 （readyState为 interactive 或 complete），立即初始化
     safeInit();
   }
 })();

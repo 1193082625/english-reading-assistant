@@ -229,17 +229,26 @@ function showToast(msg) {
 // =========== 初始化 ===========
 
 async function init() {
+  // 为nav挂载点击事件
   initNav();
 
+  // 加载设置信息
   await loadSettings();
+  // 将数据填充到表单中
   populateForm();
 
+  // 添加切换供应商事件
   initProviderSwitch();
+  // 初始化术语库
   initTermAdd();
+  // 从外部导入术语
   initTermImport();
+  // 导出术语
   initTermExport();
+  // 重置术语库
   initTermReset();
 
+  // 保存设置
   $('saveBtn').addEventListener('click', saveSettings);
 }
 
